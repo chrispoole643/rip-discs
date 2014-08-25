@@ -1,0 +1,116 @@
+#!/bin/bash -
+
+### Rip Episodes
+### ============
+###
+### Rip TV episodes from a DVD using Handbrake.
+###
+### `rip-episodes -h` for more.
+
+
+## Variables
+
+bitrate=1500
+scan=false
+prefix=""
+season=1
+title=1
+source=""
+min_length=10 # Minutes
+outputdir="$HOME/Movies/"
+enhanced=false
+
+
+## Functions
+
+_show_help() {
+    printf -- "rip-episodes [-bcmpsuto] episode-list\n\n"
+    printf -- "e.g., rip-episodes 01 02 03, to accept default arguments and rip episodes 1-3.\n\n"
+    printf -- "Options (and defaults):\n\n"
+    printf -- "-b rate: video bitrate (${bitrate})\n"
+    printf -- "-c: when set, scan titles only (${scan})\n"
+    printf -- "-m length: mimimum length (in mins) of titles to use (${min_length})\n"
+    printf -- "-p prefix: filename prefix ('${prefix}')\n"
+    printf -- "-s n: season number (${season})\n"
+    printf -- "-u source_dir: source VIDEO_TS directory to rip the episodes from (${source})\n"
+    printf -- "-t n: start ripping from title n on disc (longer than ${min_length} mins) (${title})\n"
+    printf -- "-o dir: output directory (with trailing slash) (${outputdir})\n\n"
+    printf -- "Season and episode numbers are only used for the file name.\n"
+    exit 2
+}
+
+_report_error () {
+    printf "$(basename $0): $1.\n" >&2
+    exit 1
+}
+
+
+## Option parsing
+
+while getopts :b:cm:p:s:t:u:o:h opt; do
+    case "$opt" in
+        b)    bitrate="$OPTARG"
+              ;;
+        c)    scan=true
+              ;;
+        m)    min_length="$OPTARG"
+              ;;
+        p)    prefix="$OPTARG"
+              ;;
+        s)    season="$OPTARG"
+              ;;
+        t)    title="$OPTARG"
+              ;;
+        u)    source="$OPTARG"
+              ;;
+        o)    outputdir="$OPTARG"
+              ;;
+        h)    _show_help
+              ;;
+        '?')  _report_error "invalid option $OPTARG. rip-episodes -h for more info"
+              ;;
+    esac
+done
+
+shift $((OPTIND-1)) # Forget single-letter options now; put main options to front
+
+
+## Main logic
+
+if grep -E -- '^[0-9]+-[0-9]+$' <<< "$*" > /dev/null; then     # If passing a range of episodes, parse out
+    ep1=$(cut -d- -f1 <<< "$1")
+    ep2=$(cut -d- -f2 <<< "$1")
+    episodes=$(gseq -s' ' -w "$ep1" "$ep2")
+else
+    episodes="$@"
+fi
+
+if [[ ! -z "$source" ]]; then
+    drive="$source"
+else
+    drive=$(drutil status | grep -Eo '/dev/disk[1-9]')
+    # if [[ "$?" -gt 0 ]]; then
+    #     _report_error "No disc available; stopping"
+    # fi
+fi
+
+# TODO:
+#   allow for other content input, other than DVD currently.
+#   5000 kbps, VBV 25000 for 1080p
+#   4000 kbps, VBV 17500 for 720p
+#   1800 kbps, VBV 12500 for DVD
+
+video_settings="-e x264 -f mp4 --loose-anamorphic --modulus 2 -m --x264-preset fast --h264-profile high --h264-level 4.1 -x ratetol=inf:vbv-maxrate=12500:vbv-bufsize=12500 -b ${bitrate} --decomb --cfr -r25"
+audio_settings='-6 dpl2,none -E ca_aac,copy:ac3 -a 1 -B 160 -R Auto -D 0.0 --audio-fallback ca_aac'
+
+titles=$(HandBrakeCLI -i "$drive" -t0 2>&1 | awk -F: -v "min=$min_length" 'BEGIN{OFS=":";t=1}/\+ duration:/{if ($3>min) print t,$2,$3,$4;t++}')
+
+if "$scan"; then
+    printf -- "${titles}\n"
+else
+    for episode in $episodes; do
+        current_title=$(printf -- "$titles" | head "-$title" | tail -1 | awk -F: '{print $1}')
+        HandBrakeCLI -i "$drive" -t "$current_title" -o "${outputdir}${prefix}-S${season}E${episode}.mp4" ${video_settings} ${audio_settings}
+        title=$((title+1))
+    done && ls -lh "$outputdir" # && sleep 60 && drutil eject
+fi

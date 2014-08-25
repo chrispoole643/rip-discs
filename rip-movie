@@ -1,0 +1,96 @@
+#!/bin/bash -
+
+### Rip Movie
+### =========
+###
+### Rip a movie from a DVD using Handbrake.
+###
+### `rip-movie -h` for more.
+
+
+## Variables
+
+bitrate=1800
+scan=""
+title=1
+min_length=1                    # Hours, not minutes as with rip-episodes
+outputdir="$HOME/Movies/"
+
+
+## Functions
+
+_show_help() {
+    printf -- "rip-movie [-bcmuto] title\n\n"
+    printf -- "e.g., rip-movie title, to accept default arguments and rip the movie.\n\n"
+    printf -- "Options (and defaults):\n\n"
+    printf -- "-b rate: video bitrate (${bitrate})\n"
+    printf -- "-c: when set, scan titles only (${scan})\n"
+    printf -- "-m length: mimimum length (in mins) of title to use (${min_length})\n"
+    printf -- "-u source_dir: source VIDEO_TS directory to rip the episodes from (${source})\n"
+    printf -- "-t n: start ripping from title n on disc (longer than ${min_length} mins) (${title})\n"
+    printf -- "-o dir: output directory (with trailing slash) (${outputdir})\n\n"
+    exit 2
+}
+
+_report_error () {
+    printf "$(basename $0): $1.\n" >&2
+    exit 1
+}
+
+
+## Option parsing
+
+while getopts :b:cm:t:u:o:h opt; do
+    case "$opt" in
+        b)    bitrate="$OPTARG"
+              ;;
+        c)    scan=true
+              ;;
+        m)    min_length="$OPTARG"
+              ;;
+        t)    title="$OPTARG"
+              ;;
+        u)    source="$OPTARG"
+              ;;
+        o)    outputdir="$OPTARG"
+              ;;
+        h)    _show_help
+              ;;
+        '?')  _report_error "invalid option $OPTARG. rip-movie -h for more info"
+              ;;
+    esac
+done
+
+shift $((OPTIND-1)) # Forget single-letter options now; put main options to front
+
+
+## Main logic
+
+movie="$*" # Collect all args as one string together
+
+if [[ ! -z "$source" ]]; then
+    drive="$source"
+else
+    drive=$(drutil status | grep -Eo '/dev/disk[1-9]')
+    # if [[ "$?" -gt 0 ]]; then
+    #     _report_error "No disc available; stopping"
+    # fi
+fi
+
+# TODO:
+#   allow for other content input, other than DVD currently.
+#   5000 kbps, VBV 25000 for 1080p
+#   4000 kbps, VBV 17500 for 720p
+#   1800 kbps, VBV 12500 for DVD
+
+video_settings="-e x264 -f mp4 --loose-anamorphic --modulus 2 -m --x264-preset fast --h264-profile high --h264-level 4.1 -x ratetol=inf:vbv-maxrate=12500:vbv-bufsize=12500 -b ${bitrate} --decomb --cfr -r25"
+audio_settings='-6 dpl2,none -E ca_aac,copy:ac3 -a 1 -B 160 -R Auto -D 0.0 --audio-fallback ca_aac'
+
+titles=$(HandBrakeCLI -i "$drive" -t0 2>&1 | awk -F: -v "min=$min_length" 'BEGIN{OFS=":";t=1}/\+ duration:/{if ($2>=min) print t,$2,$3,$4;t++}')
+
+if "$scan"; then
+    printf -- "${titles}\n"
+else
+    main_title=$(printf -- "$titles" | head "-$title" | tail -1 | awk -F: '{print $1}')
+    HandBrakeCLI -i "$drive" -t "$main_title" -o "${outputdir}${movie}.mp4" ${video_settings} ${audio_settings} && ls -lh "$outputdir" # && sleep 60 && drutil eject
+fi
