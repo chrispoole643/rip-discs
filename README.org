@@ -1,0 +1,45 @@
+* Rip Discs
+
+A few scripts to make ripping your media easier (for personal backup purposes).
+
+** rip-movie
+
+** rip-episodes
+
+** find-movie
+
+Takes a movie name as its first argument and returns the correct title and year of its
+release. Queries the [[https://www.themoviedb.org/][TMDb API]] using [[https://github.com/celiao/tmdbsimple/][tmdbsimple]], so install that first:
+
+#+BEGIN_SRC sh
+pip install tmdbsimple
+#+END_SRC
+
+Register for an API key with TMDb, and put it in the file =~/.tmdb_api_key=.
+
+Run the script by passing the movie name as the first argument:
+
+#+BEGIN_SRC sh
+❯ python find-movie TOP_GUN
+Top Gun (1986)
+#+END_SRC
+
+
+If a movie can't be found, it'll return error code 1 and report it:
+
+#+BEGIN_SRC sh
+❯ python find-movie AAAAA
+find-movie: movie not found
+#+END_SRC
+
+
+The movie returned will be the most popular one found that matches the string passed, and
+unicode characters will be replaced to allow for filesystem compatibility:
+
+#+BEGIN_SRC sh
+❯ python find-movie 'the italian job'
+The Italian Job (2003)
+
+❯ python find-movie amelie
+Am?lie (2001)
+#+END_SRC
