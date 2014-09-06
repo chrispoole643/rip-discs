@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+from os.path import expanduser
+import re
+import sys
+import tmdbsimple as tmdb
+
+with open(expanduser("~") + '/.tmdb_api_key', 'r') as file:
+    tmdb.API_KEY = file.read().rstrip()
+
+def find_movie(movie):
+    """Return a tuple containing the movie title and year of release (empty if not found)."""
+    search = tmdb.Search()
+    response = search.movie(query=movie)
+    results = sorted(response[u'results'], key=lambda k: k[u'popularity'], reverse=True)
+
+    if len(results) > 0:
+        first_movie = results[0]
+        movie_title = first_movie[u'title']
+        movie_year = re.search('(^\d+)', first_movie[u'release_date'])
+
+        return movie_title, movie_year.group(0)
+
+if __name__ == '__main__':
+    movie = find_movie(sys.argv[1].replace('_', ' '))
+    if movie:
+        print movie[0].encode('ascii', 'replace') + ' (' + movie[1] + ')'
+    else:
+        sys.exit("find-movie: movie not found")
