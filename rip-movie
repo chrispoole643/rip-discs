@@ -11,6 +11,7 @@
 ## Variables
 
 bitrate=1800
+bufsize=12500
 foreign=""
 scan=""
 use_TMDb=""
@@ -24,17 +25,19 @@ outputdir="$HOME/Movies/"
 ## Functions
 
 _show_help() {
-    printf -- "rip-movie [-bcdfsmuto] title\n\n"
-    printf -- "e.g., rip-movie title, to accept default arguments and rip the movie.\n\n"
+    printf -- "rip-movie [-17bcdflmusto] title\n\n"
     printf -- "Options (and defaults):\n\n"
+    printf -- "-1: set x264 bitrate and bufsize values to those for 1080p content\n"
+    printf -- "-7: set x264 bitrate and bufsize values to those for 720p content\n"
     printf -- "-b rate: video bitrate (${bitrate})\n"
-    printf -- "-c: when set, scan titles only (${scan})\n"
-    printf -- "-d: when set, find the movie's name and year using TMDb\n"
-    printf -- "-f: when set, include all subtitles, not just those that are forced (${foreign})\n"
-    printf -- "-m length: mimimum length (in mins) of title to use (${min_length})\n"
-    printf -- "-u source_dir: source VIDEO_TS directory to rip the episodes from (${source})\n"
+    printf -- "-c: scan titles of media only\n"
+    printf -- "-d: set the movie filename to its name and year using TMDb\n"
+    printf -- "-f: assume a foreign film and include all subtitles, not just those that are forced\n"
+    printf -- "-l language: iso639-2 language to use for subtitles (and audio if not foreign) (${language})\n"
+    printf -- "-m length: mimimum length (in hours) of title to use (${min_length})\n"
+    printf -- "-u source_dir: source VIDEO_TS / MKV rip directory to rip the movie from\n"
     printf -- "-s subtitle_track: subtitle track to rip (${subtitle_track})\n"
-    printf -- "-t n: start ripping from title n on disc (longer than ${min_length} mins) (${title})\n"
+    printf -- "-t n: start ripping from title n on disc (longer than ${min_length} hour) (${title})\n"
     printf -- "-o dir: output directory (with trailing slash) (${outputdir})\n\n"
     exit 2
 }
@@ -47,8 +50,14 @@ _report_error () {
 
 ## Option parsing
 
-while getopts :b:cds:fm:t:u:o:h opt; do
+while getopts :17b:cds:fl:m:t:u:o:h opt; do
     case "$opt" in
+        1)    bitrate=5000
+              bufsize=25000
+              ;;
+        7)    bitrate=4000
+              bufsize=17500
+              ;;
         b)    bitrate="$OPTARG"
               ;;
         c)    scan=true
@@ -56,6 +65,8 @@ while getopts :b:cds:fm:t:u:o:h opt; do
         d)    use_TMDb=true
               ;;
         f)    foreign=true
+              ;;
+        l)    language="$OPTARG"
               ;;
         m)    min_length="$OPTARG"
               ;;
@@ -99,13 +110,7 @@ else
     # fi
 fi
 
-# TODO:
-#   allow for other content input, other than DVD currently.
-#   5000 kbps, VBV 25000 for 1080p
-#   4000 kbps, VBV 17500 for 720p
-#   1800 kbps, VBV 12500 for DVD
-
-video_settings="-e x264 -f mkv --loose-anamorphic --modulus 2 -m --x264-preset fast --h264-profile high --h264-level 4.1 -x ratetol=inf:vbv-maxrate=12500:vbv-bufsize=12500 -b ${bitrate} --decomb --cfr -r25 -N${language} --subtitle-default -s ${subtitle_track}"
+video_settings="-e x264 -f mkv --loose-anamorphic --modulus 2 -m --x264-preset fast --h264-profile high --h264-level 4.1 -x ratetol=inf:vbv-maxrate=${bufsize}:vbv-bufsize=${bufsize} -b ${bitrate} --decomb --cfr -r25 -N${language} --subtitle-default -s ${subtitle_track}"
 
 if [[ -z "$foreign" ]]; then
     # "Film isn't foreign, so find the forced subtitles only"
