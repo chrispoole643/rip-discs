@@ -8,11 +8,14 @@ import tmdbsimple as tmdb
 with open(expanduser("~") + '/.tmdb_api_key', 'r') as file:
     tmdb.API_KEY = file.read().rstrip()
 
-def find_movie(movie):
+def find_movie(movie, sort=False):
     """Return a tuple containing the movie title and year of release (empty if not found)."""
     search = tmdb.Search()
     response = search.movie(query=movie)
-    results = sorted(response[u'results'], key=lambda k: k[u'popularity'], reverse=True)
+    if sort:
+        results = sorted(response[u'results'], key=lambda k: k[u'popularity'], reverse=True)
+    else:
+        results = response[u'results']
 
     if len(results) > 0:
         first_movie = results[0]
