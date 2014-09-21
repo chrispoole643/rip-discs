@@ -19,8 +19,9 @@ def find_movie(movie, sort=False):
 
     if len(results) > 0:
         first_movie = results[0]
-        movie_title = first_movie[u'title']
-        movie_year = re.search('(^\d+)', first_movie[u'release_date'])
+        # Only allow common filesystem characters
+        movie_title = re.sub(r"[^-a-zA-Z.\(\)' ]", '', first_movie[u'title'])
+        movie_year = re.search(r'(^\d+)', first_movie[u'release_date'])
 
         return movie_title, movie_year.group(0)
 
