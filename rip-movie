@@ -10,6 +10,7 @@
 
 ## Variables
 
+aspect_ratio=auto
 bitrate=1800
 rate=25
 bufsize=12500
@@ -27,7 +28,7 @@ outputdir="$HOME/Movies/"
 ## Functions
 
 _show_help() {
-    printf -- "rip-movie [-17abcdflmusto] title\n\n"
+    printf -- "rip-movie [-17abcdflmursto] title\n\n"
     printf -- "Options (and defaults):\n\n"
     printf -- "-1: set x264 bitrate and bufsize values to those for 1080p content\n"
     printf -- "-7: set x264 bitrate and bufsize values to those for 720p content\n"
@@ -39,6 +40,7 @@ _show_help() {
     printf -- "-l language: iso639-2 language to use for subtitles (and audio if not foreign) (${language})\n"
     printf -- "-m length: mimimum length (in hours) of title to use (${min_length})\n"
     printf -- "-u source_dir: source VIDEO_TS / MKV rip directory to rip the movie from\n"
+    printf -- "-r pixel_aspect_ratio: colon-separated ratio (e.g., 16:9) (${aspect_ratio})\n"
     printf -- "-s subtitle_track: subtitle track to rip (${subtitle_track})\n"
     printf -- "-t n: start ripping from title n on disc (longer than ${min_length} hour) (${title})\n"
     printf -- "-o dir: output directory (with trailing slash) (${outputdir})\n\n"
@@ -53,7 +55,7 @@ _report_error () {
 
 ## Option parsing
 
-while getopts :17ab:cds:fl:m:t:u:o:h opt; do
+while getopts :17ab:cdr:s:fl:m:t:u:o:h opt; do
     case "$opt" in
         1)    bitrate=5000
               bufsize=25000
@@ -74,6 +76,8 @@ while getopts :17ab:cds:fl:m:t:u:o:h opt; do
         l)    language="$OPTARG"
               ;;
         m)    min_length="$OPTARG"
+              ;;
+        r)    aspect_ratio="$OPTARG"
               ;;
         s)    subtitle_track="$OPTARG"
               ;;
@@ -120,6 +124,10 @@ video_settings="-e x264 -f mkv --loose-anamorphic --modulus 2 -m --x264-preset f
 if ! "$foreign"; then
     # "Film isn't foreign, so find the forced subtitles only"
     video_settings="${video_settings} -F --native-dub"
+fi
+
+if [[ "$aspect_ratio" != "auto" ]]; then
+    video_settings="${video_settings} --pixel-aspect ${aspect_ratio}"
 fi
 
 audio_settings='-R Auto -D 0.0 --audio-fallback ca_aac'
