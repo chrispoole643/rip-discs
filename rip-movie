@@ -18,6 +18,7 @@ add_aac=false
 foreign=false
 scan=false
 use_TMDb=false
+variable_frame_rate=false
 subtitle_track="scan"
 language="eng"
 title=1
@@ -28,7 +29,7 @@ outputdir="$HOME/Movies/"
 ## Functions
 
 _show_help() {
-    printf -- "rip-movie [-17abcdflmursto] title\n\n"
+    printf -- "rip-movie [-17abcdflmuvrsto] title\n\n"
     printf -- "Options (and defaults):\n\n"
     printf -- "-1: set x264 bitrate and bufsize values to those for 1080p content\n"
     printf -- "-7: set x264 bitrate and bufsize values to those for 720p content\n"
@@ -41,6 +42,7 @@ _show_help() {
     printf -- "-m length: mimimum length (in hours) of title to use (${min_length})\n"
     printf -- "-u source_dir: source VIDEO_TS / MKV rip directory to rip the movie from\n"
     printf -- "-r pixel_aspect_ratio: colon-separated ratio (e.g., 16:9) (${aspect_ratio})\n"
+    printf -- "-v variable_frame_rate: enable variable frame rate (${variable_frame_rate})\n"
     printf -- "-s subtitle_track: subtitle track to rip (${subtitle_track})\n"
     printf -- "-t n: start ripping from title n on disc (longer than ${min_length} hour) (${title})\n"
     printf -- "-o dir: output directory (with trailing slash) (${outputdir})\n\n"
@@ -55,7 +57,7 @@ _report_error () {
 
 ## Option parsing
 
-while getopts :17ab:cdr:s:fl:m:t:u:o:h opt; do
+while getopts :17ab:cdr:s:fl:m:t:u:vo:h opt; do
     case "$opt" in
         1)    bitrate=5000
               bufsize=25000
@@ -84,6 +86,8 @@ while getopts :17ab:cdr:s:fl:m:t:u:o:h opt; do
         t)    title="$OPTARG"
               ;;
         u)    source="$OPTARG"
+              ;;
+        v)    variable_frame_rate=true
               ;;
         o)    outputdir="$OPTARG"
               ;;
@@ -119,7 +123,7 @@ else
     # fi
 fi
 
-video_settings="-e x264 -f mkv --modulus 2 -m --x264-preset fast --h264-profile high --h264-level 4.1 -x ratetol=inf:vbv-maxrate=${bufsize}:vbv-bufsize=${bufsize} -b ${bitrate} --decomb --cfr -r${rate} -N${language} -s ${subtitle_track}"
+video_settings="-e x264 -f mkv --modulus 2 -m --x264-preset fast --h264-profile high --h264-level 4.1 -x ratetol=inf:vbv-maxrate=${bufsize}:vbv-bufsize=${bufsize} -b ${bitrate} --decomb -N${language} -s ${subtitle_track}"
 
 if ! "$foreign"; then
     # "Film isn't foreign, so find the forced subtitles only"
@@ -130,6 +134,12 @@ if [[ "$aspect_ratio" == "auto" ]]; then
     video_settings="${video_settings} --strict-anamorphic"
 else
     video_settings="${video_settings} --custom-anamorphic --pixel-aspect ${aspect_ratio}"
+fi
+
+if [[ "$variable_frame_rate" == "true" ]]; then
+    video_settings="${video_settings} --vfr"
+else
+    video_settings="${video_settings} --cfr -r${rate}"
 fi
 
 audio_settings='-R Auto -D 0.0 --audio-fallback ca_aac'
