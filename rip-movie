@@ -119,15 +119,17 @@ else
     # fi
 fi
 
-video_settings="-e x264 -f mkv --loose-anamorphic --modulus 2 -m --x264-preset fast --h264-profile high --h264-level 4.1 -x ratetol=inf:vbv-maxrate=${bufsize}:vbv-bufsize=${bufsize} -b ${bitrate} --decomb --cfr -r${rate} -N${language} -s ${subtitle_track}"
+video_settings="-e x264 -f mkv --modulus 2 -m --x264-preset fast --h264-profile high --h264-level 4.1 -x ratetol=inf:vbv-maxrate=${bufsize}:vbv-bufsize=${bufsize} -b ${bitrate} --decomb --cfr -r${rate} -N${language} -s ${subtitle_track}"
 
 if ! "$foreign"; then
     # "Film isn't foreign, so find the forced subtitles only"
     video_settings="${video_settings} -F --native-dub"
 fi
 
-if [[ "$aspect_ratio" != "auto" ]]; then
-    video_settings="${video_settings} --pixel-aspect ${aspect_ratio}"
+if [[ "$aspect_ratio" == "auto" ]]; then
+    video_settings="${video_settings} --strict-anamorphic"
+else
+    video_settings="${video_settings} --custom-anamorphic --pixel-aspect ${aspect_ratio}"
 fi
 
 audio_settings='-R Auto -D 0.0 --audio-fallback ca_aac'
