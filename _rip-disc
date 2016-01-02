@@ -40,7 +40,7 @@ _show_help() {
     printf -- "-b: rate: video bitrate (${bitrate})\n"
     printf -- "-c: constant_frame_rate: set the constant frame rate (${constant_frame_rate})\n"
     printf -- "-d: set the movie filename to its name and year using TMDb\n"
-    printf -- "-e source_dir: source VIDEO_TS or MakeMKV-created directory to rip the episodes from (${source})\n"
+    printf -- "-e source: source VIDEO_TS or MakeMKV-created directory to rip the episodes from (${source})\n"
     printf -- "-f: assume a foreign film and include all subtitles, not just those that are forced\n"
     printf -- "-l language: iso639-2 language to use for subtitles (and audio if not foreign) (${language})\n"
     printf -- "-m length: mimimum length (in mins) of titles to use (${min_length})\n"    
