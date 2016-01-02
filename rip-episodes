@@ -25,7 +25,7 @@ a_episode_files=("$source"/*.mkv)
 
 if (("${#a_episodes[@]}" != "${#a_episode_files[@]}"))
 then
-    _report_error "Number of packages and number of targets differ"
+    _report_error "Number of files in source directory and number of episodes listed differ"
 fi
 
 for index in "${!a_episodes[@]}"
