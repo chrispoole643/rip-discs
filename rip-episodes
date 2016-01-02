@@ -23,13 +23,11 @@ fi
 a_episodes=($episodes)
 a_episode_files=("$source"/*.mkv)
 
-if (("${#a_episodes[@]}" != "${#a_episode_files[@]}"))
-then
+if (("${#a_episodes[@]}" != "${#a_episode_files[@]}")); then
     _report_error "Number of files in source directory and number of episodes listed differ"
 fi
 
-for index in "${!a_episodes[@]}"
-do
+for index in "${!a_episodes[@]}"; do
     episode="${a_episodes[$index]}"
     episode_file="${a_episode_files[$index]}"
 
