@@ -10,6 +10,7 @@
 aspect_ratio=false
 bitrate=1800
 bufsize=12500
+burn=""
 add_aac=false
 foreign=false
 scan=false
@@ -32,13 +33,14 @@ _report_error () {
 }
 
 _show_help() {
-    printf -- "rip-movie [-17abcdeflmoprstuv] title\n"
-    printf -- "rip-episodes [-17abcdeflmoprstuv] episode-list\n\n"
+    printf -- "rip-movie [-17abBcdeflmoprstuv] title\n"
+    printf -- "rip-episodes [-17abBcdeflmoprstuv] episode-list\n\n"
     printf -- "Options (and defaults):\n"
     printf -- "-1: set x264 bitrate and bufsize values to those for 1080p content\n"
     printf -- "-7: set x264 bitrate and bufsize values to those for 720p content\n"
     printf -- "-a: instead of an AC3 track only, add AAC as the first track\n"
     printf -- "-b: rate: video bitrate (${bitrate})\n"
+    printf -- "-B: burn subtitles into the video\n"
     printf -- "-c: constant_frame_rate: set the constant frame rate (${constant_frame_rate})\n"
     printf -- "-d: set the movie filename to its name and year using TMDb\n"
     printf -- "-e source: source VIDEO_TS or MakeMKV-created directory to rip the episodes from (${source})\n"
@@ -69,6 +71,10 @@ _set_video_settings() {
     if ! "$foreign"; then
         # "Film isn't foreign, so find the forced subtitles only"
         video_settings="${video_settings} -F --native-dub"
+    fi
+
+    if "$burn"; then
+        video_settings="${video_settings} --subtitle-burned"
     fi
     
     if [[ "$aspect_ratio" == "false" ]]; then
@@ -102,7 +108,7 @@ _set_audio_settings() {
 
 ## Option parsing
 
-while getopts :17ab:c:de:fl:m:o:p:r:s:t:u:v:h opt; do
+while getopts :17ab:Bc:de:fl:m:o:p:r:s:t:u:v:h opt; do
     case "$opt" in
         1)    bitrate=5000
               bufsize=25000
@@ -113,6 +119,8 @@ while getopts :17ab:c:de:fl:m:o:p:r:s:t:u:v:h opt; do
         a)    add_aac=true
               ;;
         b)    bitrate="$OPTARG"
+              ;;
+        B)    burn=true
               ;;
         c)    constant_frame_rate="$OPTARG"
               ;;
