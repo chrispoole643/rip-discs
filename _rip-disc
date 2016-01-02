@@ -22,6 +22,7 @@ prefix=""
 season=1
 title=1
 source=""
+preview_count=20
 
 ## Functions
 
@@ -31,8 +32,8 @@ _report_error () {
 }
 
 _show_help() {
-    printf -- "rip-movie [-17abcdeflmoprstu] title\n"
-    printf -- "rip-episodes [-17abcdeflmoprstu] episode-list\n\n"
+    printf -- "rip-movie [-17abcdeflmoprstuv] title\n"
+    printf -- "rip-episodes [-17abcdeflmoprstuv] episode-list\n\n"
     printf -- "Options (and defaults):\n"
     printf -- "-1: set x264 bitrate and bufsize values to those for 1080p content\n"
     printf -- "-7: set x264 bitrate and bufsize values to those for 720p content\n"
@@ -50,6 +51,7 @@ _show_help() {
     printf -- "-s n: season number (${season})\n"
     printf -- "-t n: start ripping from title n on disc (${title})\n"
     printf -- "-u subtitle_track: subtitle track to rip (${subtitle_track})\n"
+    printf -- "-v preview_count: how many previews to generate (can help with autocropping) (${preview_count})\n"
     exit 2
 }
 
@@ -62,7 +64,7 @@ _get_media_info() {
 }
 
 _set_video_settings() {
-    video_settings="-e x264 -f mkv --modulus 2 -m --x264-preset fast --h264-profile high --h264-level 4.1 -x ratetol=inf:vbv-maxrate=${bufsize}:vbv-bufsize=${bufsize} -b ${bitrate} --decomb -N${language} --subtitle-default -s ${subtitle_track}"
+    video_settings="--previews ${preview_count}:0 -e x264 -f mkv --modulus 2 -m --x264-preset fast --h264-profile high --h264-level 4.1 -x ratetol=inf:vbv-maxrate=${bufsize}:vbv-bufsize=${bufsize} -b ${bitrate} --decomb -N${language} --subtitle-default -s ${subtitle_track}"
 
     if ! "$foreign"; then
         # "Film isn't foreign, so find the forced subtitles only"
@@ -100,7 +102,7 @@ _set_audio_settings() {
 
 ## Option parsing
 
-while getopts :17ab:c:de:fl:m:o:p:r:s:t:u:h opt; do
+while getopts :17ab:c:de:fl:m:o:p:r:s:t:u:v:h opt; do
     case "$opt" in
         1)    bitrate=5000
               bufsize=25000
@@ -135,6 +137,8 @@ while getopts :17ab:c:de:fl:m:o:p:r:s:t:u:h opt; do
         t)    title="$OPTARG"
               ;;
         u)    subtitle_track="$OPTARG"
+              ;;
+        v)    preview_count="$OPTARG"
               ;;
         h)    _show_help
               ;;
