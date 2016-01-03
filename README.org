@@ -1,10 +1,98 @@
 * Rip Discs
 
-A few scripts to make ripping your media easier (for personal backup purposes).
+A few scripts to make ripping your media easier (for personal backup purposes). These are
+designed---similar to [[https://github.com/donmelton/video_transcoding/][Don Melton's scripts]]---to ultimately invoke HandBrakeCLI, with
+a smarter configuration. They in no way go into the depth that Don's do, however, and are
+very much a means to get the job done with the minimum of fuss.
+
+** Installation
+
+I'm assuming Mac OS X as the platform (since that's what I'm using), though they should
+work fine on Linux. You'll need HandBrakeCLI (get the [[https://handbrake.fr/nightly.php][nightly version]]). I've also made
+use of ~mediainfo~ and ~gseq~ (part of GNU Coreutils), both of which can be installed via
+[[http://brew.sh/][Homebrew]].
+
+** MakeMKV
+
+Both scripts assume a starting point of either an MKV file (in the case of ~rip-movie~)
+or a directory containing MKV files of each episode (for ~rip-episode~). Use [[http://www.makemkv.com/][MakeMKV]] to
+rip the disc into a full-fat MKV file (or folder of files).
 
 ** rip-movie
 
+Pass the script the MKV file that represents the main title of the disc:
+
+#+BEGIN_SRC sh
+rip-movie movie.mkv
+#+END_SRC
+
+By default, the English Dolby Digital track will be selected, as well as any forced
+subtitles in English. The output file (by default the same name as the input) will be
+written to =~/Movies=. You can make use of ~find-movie~ and have it pull the correct
+movie name and year of release. For example:
+
+#+BEGIN_SRC sh
+rip-movie -d 'hunt for red october'
+#+END_SRC
+
+will output to =~/Movies/The Hunt for Red October (1990).mkv=.
+
+The frame rate (and whether it's constant or variable) will be pulled from the source
+file. Extra options or configuration details can be found by looking at the help text:
+
+#+BEGIN_SRC sh
+rip-movie -h
+#+END_SRC
+
 ** rip-episodes
+
+Here's the idea: you've ripped the first four episodes of a TV show you want to watch
+them. You might have a directory tree that looks like this, after ripping the disc with
+MakeMKV:
+
+#+BEGIN_SRC sh
+GILMORE_GIRLS_S2_D1e01-4/
+├── title01.mkv
+├── title02.mkv
+├── title03.mkv
+└── title04.mkv
+#+END_SRC
+
+Simple run the following command to correctly name these files:
+
+#+BEGIN_SRC sh
+rip-episodes -e GILMORE_GIRLS_S2_D1e01-4/ -p Gilmore-Girls -s02 01-4
+#+END_SRC
+
+The name prefix for each file must be passed, as well as the season number. The last item
+to pass to the script is the episode list. Either make this a list of episodes (e.g., =1
+2 3 4=), or a range like =01-4=. Prefix one of the single-digit numbers with a zero and
+all the numbers will have that prefix, in effect giving you =01 02 03 04=, which looks
+neater. You'll end up with these files in =~/Movies=:
+
+#+BEGIN_SRC sh
+Gilmore-Girls-S02E01.mkv
+Gilmore-Girls-S02E02.mkv
+Gilmore-Girls-S02E03.mkv
+Gilmore-Girls-S02E04.mkv
+#+END_SRC
+
+All files will be subject to the same settings as with ~rip-movie~: English language
+Dolby Digital sound track (where possible), and forced subtitles. Use a wrapper script
+like the following to batch convert several folders (discs) at once:
+
+#+BEGIN_SRC sh
+#!/bin/bash -
+
+title="$1"
+season="$2"
+
+for i in */; do
+    rip-episodes -p "$title" -s"$season" -e "$i" $(echo "$i" | sed -E 's_.+[Ee]([0-9]+-[0-9]+)/?_\1_g')
+done
+#+END_SRC
+
+(This assumes the directory names end with the episode range, such as =e01-4= above.)
 
 ** find-movie
 
