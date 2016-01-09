@@ -58,7 +58,7 @@ GILMORE_GIRLS_S2_D1e01-4/
 └── title04.mkv
 #+END_SRC
 
-Simple run the following command to correctly name these files:
+Simply run the following command to correctly name these files:
 
 #+BEGIN_SRC sh
 rip-episodes -e GILMORE_GIRLS_S2_D1e01-4/ -p Gilmore-Girls -s02 01-4
