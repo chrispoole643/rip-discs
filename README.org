@@ -94,7 +94,7 @@ done
 
 (This assumes the directory names end with the episode range, such as =e01-4= above.)
 
-** find-movie
+** =find-movie=
 
 Takes a movie name as its first argument and returns the correct title and year of its
 release. Queries the [[https://www.themoviedb.org/][TMDb API]] using [[https://github.com/celiao/tmdbsimple/][tmdbsimple]], so install that first:
