@@ -65,7 +65,7 @@ _get_media_info() {
     media_info_ar=$(grep -F 'Display aspect ratio' <<< "$media_info" | cut -d: -f2-)
     media_info_fm=$(grep -F 'Frame rate mode' <<< "$media_info" | cut -d: -f2-)
     media_info_fr=$(grep -F 'Frame rate' <<< "$media_info" | grep -vF mode | head -1 | cut -d: -f2- | cut -d' ' -f2)
-    media_info_ch=$(grep -F 'Channel(s)' <<< "$media_info" | head -1 | cut -d: -f2-)
+    media_info_ch=$(grep -F 'Channel(s)' <<< "$media_info" | cut -d: -f2-)
 }
 
 _set_video_settings() {
@@ -106,7 +106,13 @@ _set_video_settings() {
 _set_audio_settings() {
     audio_settings='-R Auto -D 0.0 --audio-fallback ca_aac'
 
-    if grep -F 2 <<< "$media_info_ch" 2>&1 > /dev/null; then
+    # If the film/episode isn't foreign, choose only the (default: English) audio track
+    if ! "$foreign"; then
+        audio_settings="${audio_settings} --audio-lang-list ${language}"
+    fi
+
+    # Use AAC codec if 2 channels are found for an audio stream and no 6 channel ones are
+    if grep -qF 2 <<< "$media_info_ch" && ! grep -qF 6 <<< "$media_info_ch"; then
         audio_settings="${audio_settings} -6 dpl2 -E ca_aac -B 160"
     else
         if "$add_aac"; then
