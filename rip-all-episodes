@@ -1,0 +1,43 @@
+#!/bin/bash -
+
+# Rip All Episodes
+# ================
+#
+# Run rip-episodes over several directories. Arguments will be passed to
+# rip-episodes. The episode number and season will be determined by the directory name.
+# E.g.,
+#
+# ├── XFILES_S02E01-4
+# ├── XFILES_S02E05-8
+# ├── XFILES_S02E13-16
+# ├── XFILES_S02E17-20
+# ├── XFILES_S02E21-24
+# └── XFILES_S02E9-12
+#
+# rip-all-episodes -e XFILES -p 'The X-Files'
+# will rip files to ./The X-Files/The X-Files-S02E01.mkv etc.
+
+
+while getopts :e:p: opt; do
+    case "$opt" in
+        e)    source="$OPTARG"
+              ;;
+        p)    prefix="$OPTARG"
+              ;;
+        ?)    rest="${rest} -$OPTARG"
+    esac
+done
+shift $((OPTIND-1))
+
+if [[ -z "$source" ]] || [[ -z "$prefix" ]]; then
+    printf "Must include a source directory prefix with -e and a file prefix with -p.\n"
+    exit 1
+fi
+
+# 
+for i in "$source"*/; do            # ${!#} means last argument
+    season=$(sed -E 's_.+[Ss]([0-9]+)[Ee].+/?_\1_g' <<< "$i")
+    episode_list=$(sed -E 's_.+[Ee]([0-9]+-[0-9]+)/?_\1_g' <<< "$i")
+
+    rip-episodes -p "$prefix" -e "$i" -s "$season" -o "./$prefix" $rest "$episode_list"
+done
