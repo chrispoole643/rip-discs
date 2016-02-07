@@ -35,5 +35,5 @@ for index in "${!a_episodes[@]}"; do
     _set_video_settings
     _set_audio_settings
 
-    HandBrakeCLI -i "$episode_file" -t1 -o "${outputdir}/${prefix}-S${season}E${episode}.mkv" ${video_settings} ${audio_settings}
+    _run HandBrakeCLI -i "$episode_file" -t1 -o "${outputdir}/${prefix}-S${season}E${episode}.mkv" ${video_settings} ${audio_settings}
 done
