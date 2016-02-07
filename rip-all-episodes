@@ -18,26 +18,41 @@
 # will rip files to ./The X-Files/The X-Files-S02E01.mkv etc.
 
 
-while getopts :e:p: opt; do
+while getopts :e:p:yh opt; do
     case "$opt" in
         e)    source="$OPTARG"
               ;;
         p)    prefix="$OPTARG"
               ;;
+        y)    dry_run=true
+              ;;
+        h)    printf "Define a source directory prefix with -e and a file prefix with -p.\n"
+              printf "Dry-run the command with -y (or pass along to rip-episodes with -n).\n"
+              exit 2
+              ;;
         ?)    rest="${rest} -$OPTARG"
+              ;;
     esac
 done
 shift $((OPTIND-1))
+
+_run() {
+    if [[ -n "$dry_run" ]]; then
+        echo "$@"
+    else
+        "$@"
+    fi
+}
 
 if [[ -z "$source" ]] || [[ -z "$prefix" ]]; then
     printf "Must include a source directory prefix with -e and a file prefix with -p.\n"
     exit 1
 fi
 
-# 
 for i in "$source"*/; do
     season=$(sed -E 's_.+[Ss]([0-9]+)[Ee].+/?_\1_g' <<< "$i")
     episode_list=$(sed -E 's_.+[Ee]([0-9]+-[0-9]+)/?_\1_g' <<< "$i")
 
-    rip-episodes -p "$prefix" -e "$i" -s "$season" -o "./$prefix" $rest "$episode_list"
+    _run mkdir -p "./$prefix"
+    _run rip-episodes -p "$prefix" -e "$i" -s "$season" -o "./$prefix" $rest "$episode_list"
 done
