@@ -33,9 +33,17 @@ _report_error () {
     exit 1
 }
 
+_run() {
+    if [[ -n "$dry_run" ]]; then
+        echo "$@"
+    else
+        "$@"
+    fi
+}
+
 _show_help() {
-    printf -- "rip-movie [-17abBcdeflmoprstuvw] title\n"
-    printf -- "rip-episodes [-17abBcdeflmoprstuvw] episode-list\n\n"
+    printf -- "rip-movie [-17abBcdeflmnoprstuvw] title\n"
+    printf -- "rip-episodes [-17abBcdeflmnoprstuvw] episode-list\n\n"
     printf -- "Options (and defaults):\n"
     printf -- "-1: set x264 bitrate and bufsize values to those for 1080p content\n"
     printf -- "-7: set x264 bitrate and bufsize values to those for 720p content\n"
@@ -47,7 +55,8 @@ _show_help() {
     printf -- "-e source: source VIDEO_TS or MakeMKV-created directory to rip the episodes from (${source})\n"
     printf -- "-f: assume a foreign film and include all subtitles, not just those that are forced\n"
     printf -- "-l language: iso639-2 language to use for subtitles (and audio if not foreign) (${language})\n"
-    printf -- "-m length: mimimum length (in mins) of titles to use (${min_length})\n"    
+    printf -- "-m length: mimimum length (in mins) of titles to use (${min_length})\n"
+    printf -- "-n: perform a dry run only\n"
     printf -- "-o dir: output directory (${outputdir})\n"
     printf -- "-p prefix: filename prefix ('${prefix}')\n"
     printf -- "-r pixel_aspect_ratio: colon-separated ratio (e.g., 16:9) (${aspect_ratio})\n"
@@ -120,12 +129,12 @@ _set_audio_settings() {
         else
             audio_settings="${audio_settings} -6 none -E copy:ac3"
         fi
-    fi        
+    fi
 }
 
 ## Option parsing
 
-while getopts :17ab:Bc:de:fl:m:o:p:r:s:t:u:vw:h opt; do
+while getopts :17ab:Bc:de:fl:m:no:p:r:s:t:u:vw:h opt; do
     case "$opt" in
         1)    bitrate=5000
               bufsize=25000
@@ -150,6 +159,8 @@ while getopts :17ab:Bc:de:fl:m:o:p:r:s:t:u:vw:h opt; do
         l)    language="$OPTARG"
               ;;
         m)    min_length="$OPTARG"
+              ;;
+        n)    dry_run=true
               ;;
         o)    outputdir="$OPTARG"
               ;;
