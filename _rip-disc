@@ -72,11 +72,12 @@ _get_media_info() {
     media_info_ar=$(grep -F 'Display aspect ratio' <<< "$media_info" | cut -d: -f2-)
     media_info_fm=$(grep -F 'Frame rate mode' <<< "$media_info" | cut -d: -f2-)
     media_info_fr=$(grep -F 'Frame rate' <<< "$media_info" | grep -vF mode | head -1 | cut -d: -f2- | cut -d' ' -f2)
+    media_info_in=$(grep -F 'Scan type' <<< "$media_info" | cut -d: -f2-)
     media_info_ch=$(grep -F 'Channel(s)' <<< "$media_info" | cut -d: -f2-)
 }
 
 _set_video_settings() {
-    video_settings="--previews ${preview_count}:0 -e x264 -f mkv --modulus 2 -m --x264-preset medium --h264-profile high --h264-level 4.1 -x qpmax=34 -b ${bitrate} --decomb -N${language} --subtitle-default -s ${subtitle_track}"
+    video_settings="--previews ${preview_count}:0 -e x264 -f mkv --modulus 2 -m --x264-preset medium --h264-profile high --h264-level 4.1 -x qpmax=34 -b ${bitrate} -N${language} --subtitle-default -s ${subtitle_track}"
 
     if ! "$foreign"; then
         # "Film isn't foreign, so find the forced subtitles only"
@@ -95,11 +96,15 @@ _set_video_settings() {
         video_settings="${video_settings} --custom-anamorphic --pixel-aspect ${aspect_ratio}"
     fi
 
+    if grep -qF Interlaced <<< "$media_info_in"; then
+        video_settings="${video_settings} --decomb"
+    fi
+
     if [[ "$constant_fr" == "false" ]]; then
         video_settings="${video_settings} --vfr"
     else
         if [[ "$constant_frame_rate" == "auto" ]]; then
-            if grep -F Constant <<< "$media_info_fm" 2>&1 > /dev/null; then
+            if grep -qF Constant <<< "$media_info_fm"; then
                 video_settings="${video_settings} --cfr -r${media_info_fr}"
             else
                 video_settings="${video_settings} --vfr"
