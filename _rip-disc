@@ -24,7 +24,7 @@ season=1
 title=1
 source=""
 preview_count=100
-variable_fr=false
+constant_fr=false
 
 ## Functions
 
@@ -63,7 +63,7 @@ _show_help() {
     printf -- "-s n: season number (${season})\n"
     printf -- "-t n: start ripping from title n on disc (${title})\n"
     printf -- "-u subtitle_track: subtitle track to rip (${subtitle_track})\n"
-    printf -- "-v: override mediainfo and force variable framerate (${variable_fr})\n"
+    printf -- "-v: override mediainfo and force constant framerate (${constant_fr})\n"
     printf -- "-w preview_count: how many previews to generate (can help with autocropping) (${preview_count})\n"
     exit 2
 }
@@ -97,7 +97,7 @@ _set_video_settings() {
         video_settings="${video_settings} --custom-anamorphic --pixel-aspect ${aspect_ratio}"
     fi
 
-    if [[ "$variable_fr" == "true" ]]; then
+    if [[ "$constant_fr" == "false" ]]; then
         video_settings="${video_settings} --vfr"
     else
         if [[ "$constant_frame_rate" == "auto" ]]; then
@@ -174,7 +174,7 @@ while getopts :17ab:Bc:de:fl:m:no:p:r:s:t:u:vw:h opt; do
               ;;
         u)    subtitle_track="$OPTARG"
               ;;
-        v)    variable_fr=true
+        v)    constant_fr=true
               ;;
         w)    preview_count="$OPTARG"
               ;;
