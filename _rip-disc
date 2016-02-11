@@ -42,11 +42,9 @@ _run() {
 }
 
 _show_help() {
-    printf -- "rip-movie [-17abBcdeflmnoprstuvw] title\n"
-    printf -- "rip-episodes [-17abBcdeflmnoprstuvw] episode-list\n\n"
+    printf -- "rip-movie [-abBcdeflmnoprstuvw] title\n"
+    printf -- "rip-episodes [-abBcdeflmnoprstuvw] episode-list\n\n"
     printf -- "Options (and defaults):\n"
-    printf -- "-1: set x264 bitrate and bufsize values to those for 1080p content\n"
-    printf -- "-7: set x264 bitrate and bufsize values to those for 720p content\n"
     printf -- "-a: instead of an AC3 track only, add AAC as the first track\n"
     printf -- "-b rate: video bitrate (${bitrate})\n"
     printf -- "-B: burn subtitles into the video (${burn})\n"
@@ -134,14 +132,8 @@ _set_audio_settings() {
 
 ## Option parsing
 
-while getopts :17ab:Bc:de:fl:m:no:p:r:s:t:u:vw:h opt; do
+while getopts :ab:Bc:de:fl:m:no:p:r:s:t:u:vw:h opt; do
     case "$opt" in
-        1)    bitrate=5000
-              bufsize=25000
-              ;;
-        7)    bitrate=4000
-              bufsize=17500
-              ;;
         a)    add_aac=true
               ;;
         b)    bitrate="$OPTARG"
