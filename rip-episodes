@@ -24,7 +24,7 @@ a_episodes=($episodes)
 a_episode_files=("$source"/*.mkv)
 
 if (("${#a_episodes[@]}" > "${#a_episode_files[@]}")); then
-    _report_error "More episodes listed to rip than number of source files available"
+    _report_error "more episodes listed to rip than number of source files available"
 fi
 
 for index in "${!a_episodes[@]}"; do
