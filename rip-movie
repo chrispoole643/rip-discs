@@ -14,20 +14,19 @@ source _rip-disc
 
 ## Main logic
 
-source="$*"
-output_name="$source"
+inline_source="$*"
 
-if [[ -z $1 ]] && ! "$use_TMDb"; then
-    _report_error "no output file name found"
+if [[ -n "$inline_source" ]]; then     # Specific movie name has been specified
+    output_name="${inline_source}.mkv"
+else                            # Take the basename of the source directory
+    output_name=$(basename "$source").mkv
 fi
+
 if "$use_TMDb"; then
-    output_name=$(find-movie "${source%.*}" 2>/dev/null).mkv
+    output_name=$(find-movie "${output_name%.*}" 2>/dev/null).mkv
+
     if [[ $? -gt 0 ]]; then
-        _report_error "Movie name not found in TMDb"
-    fi
-else
-    if [[ "$(pwd)" == "${outputdir}" ]]; then
-        _report_error "Attempting to overwrite source file. Change output directory. Exiting"
+        _report_error "movie name not found in TMDb"
     fi
 fi
 
