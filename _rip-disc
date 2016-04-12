@@ -77,7 +77,7 @@ _get_media_info() {
 }
 
 _set_video_settings() {
-    video_settings="--previews ${preview_count}:0 -e x264 -f mkv --modulus 2 -m --x264-preset medium --h264-profile high --h264-level 4.1 -x qpmax=34 -b ${bitrate} --decomb -N${language} --subtitle-default -s ${subtitle_track}"
+    video_settings="--previews ${preview_count}:0 -e x264 -f mkv --modulus 2 -m --x264-preset medium --h264-profile high --h264-level 4.1 -q 1 -x vbv-maxrate=2000:vbv-bufsize=1000:crf-max=25:qpmax=34 --decomb -N${language} --subtitle-default -s ${subtitle_track}"
 
     if ! "$foreign"; then
         # "Film isn't foreign, so find the forced subtitles only"
