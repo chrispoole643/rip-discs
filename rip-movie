@@ -36,4 +36,9 @@ _set_video_settings
 
 _set_audio_settings
 
+if [[ -n $extras ]]; then
+    mkdir -p "${outputdir}/${output_name%.mkv}/Extras"
+    output_name="${output_name%.mkv}/${output_name}"
+fi
+
 _run HandBrakeCLI -i "$source" -t1 -o "${outputdir}/${output_name}" ${video_settings} ${audio_settings}
