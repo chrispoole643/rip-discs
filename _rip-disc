@@ -78,14 +78,14 @@ _get_media_info() {
 
 _set_video_settings() {
     if [[ "$media_info_he" -ge 1080 ]]; then
-        bitrate=8000
+        bitrate=6000
     elif [[ "$media_info_he" -ge 720 ]]; then
-        bitrate=4000
+        bitrate=3000
     else
-        bitrate=2000
+        bitrate=1500
     fi
 
-    video_settings="--previews ${preview_count}:0 -e x264 -f mkv --modulus 2 -m --x264-preset medium --h264-profile high --h264-level 4.1 -q 1 -x vbv-maxrate=${bitrate}:vbv-bufsize=$((bitrate/2)):crf-max=25:qpmax=34 ${decomb} -N${language} --subtitle-default -s ${subtitle_track}"
+    video_settings="--previews ${preview_count}:0 -e x264 -f mkv --modulus 2 -m --x264-preset medium --h264-profile high --h264-level 4.1 -q 1 -x vbv-maxrate=${bitrate}:vbv-bufsize=$((bitrate*2)):crf-max=25:qpmax=34 ${decomb} -N${language} --subtitle-default -s ${subtitle_track}"
 
     if ! "$foreign"; then
         # "Film isn't foreign, so find the forced subtitles only"
