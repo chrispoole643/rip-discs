@@ -30,7 +30,10 @@ if "$use_TMDb"; then
     fi
 fi
 
-_get_media_info "$source"
+a_movie_files=("${source%/}"/*.mkv)
+movie_file="${a_movie_files[0]}"
+
+_get_media_info "$movie_file"
 
 _set_video_settings
 
@@ -41,4 +44,4 @@ if [[ -n $extras ]]; then
     output_name="${output_name%.mkv}/${output_name}"
 fi
 
-_run HandBrakeCLI -i "$source" -t1 -o "${outputdir}/${output_name}" ${video_settings} ${audio_settings}
+_run HandBrakeCLI -i "$movie_file" -t1 -o "${outputdir}/${output_name}" ${video_settings} ${audio_settings}
