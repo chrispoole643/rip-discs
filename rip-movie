@@ -35,7 +35,8 @@ a_movie_files=("${source%/}"/*.mkv)
 final_output_dir="${outputdir}/${movie_name%.mkv}"
 
 if [[ -n $extras ]]; then
-    input_files=("${a_movie_files[@]:1}")     # Forget first file (assume it's the movie itself)
+    # Forget first (n) offsetfiles (assume it's the movie or otherwise not extras)
+    input_files=("${a_movie_files[@]:$extra_offset}")
     mkdir -p "${final_output_dir}/Extras"
 else
     input_files=("${a_movie_files[0]}")
