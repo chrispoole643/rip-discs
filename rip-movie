@@ -16,32 +16,42 @@ source _rip-disc
 
 inline_source="$*"
 
-if [[ -n "$inline_source" ]]; then     # Specific movie name has been specified
-    output_name="${inline_source}.mkv"
-else                            # Take the basename of the source directory
-    output_name=$(basename "$source").mkv
+if [[ -n "$inline_source" ]]; then # Specific movie name has been specified
+    movie_name="${inline_source}.mkv"
+else                               # Take the basename of the source directory
+    movie_name=$(basename "$source").mkv
 fi
 
 if "$use_TMDb"; then
-    output_name=$(find-movie "${output_name%.*}" 2>/dev/null).mkv
+    movie_name=$(find-movie "${movie_name%.*}" 2>/dev/null).mkv
 
     if [[ $? -gt 0 ]]; then
         _report_error "movie name not found in TMDb"
     fi
 fi
 
+# Find all the mkv files in the source directory
 a_movie_files=("${source%/}"/*.mkv)
-movie_file="${a_movie_files[0]}"
-
-_get_media_info "$movie_file"
-
-_set_video_settings
-
-_set_audio_settings
+final_output_dir="${outputdir}/${movie_name%.mkv}"
 
 if [[ -n $extras ]]; then
-    mkdir -p "${outputdir}/${output_name%.mkv}/Extras"
-    output_name="${output_name%.mkv}/${output_name}"
+    input_files=("${a_movie_files[@]:1}")     # Forget first file (assume it's the movie itself)
+    mkdir -p "${final_output_dir}/Extras"
+else
+    input_files=("${a_movie_files[0]}")
+    mkdir -p "${final_output_dir}"
 fi
 
-_run HandBrakeCLI -i "$movie_file" -t1 -o "${outputdir}/${output_name}" ${video_settings} ${audio_settings}
+for index in ${!input_files[@]}; do
+    input_file="${input_files[$index]}"
+    
+    _get_media_info "$input_file"
+    _set_video_settings
+    _set_audio_settings
+
+    if [[ -n $extras ]]; then
+        output_name="Extras/Extra $((1+${index}))-" # Count extras from 1
+    fi
+
+    _run HandBrakeCLI -i "$input_file" -t1 -o "${final_output_dir}/${output_name}${movie_name}" ${video_settings} ${audio_settings}
+done
