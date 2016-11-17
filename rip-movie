@@ -51,7 +51,10 @@ for index in ${!input_files[@]}; do
     _set_audio_settings
 
     if [[ -n $extras ]]; then
-        output_name="Extras/Extra $((1+${index}))-" # Count extras from 1
+        # Count extras from 1, not 0 (like index starts from). Allow for ripping special
+        # feature discs after already having ripped special features from the main disc,
+        # with a displacement.
+        output_name="Extras/Extra $((1+${index}+${extra_displacement}))-"
     fi
 
     _run HandBrakeCLI -i "$input_file" -t1 -o "${final_output_dir}/${output_name}${movie_name}" ${video_settings} ${audio_settings}
