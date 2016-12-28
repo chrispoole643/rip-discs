@@ -101,7 +101,7 @@ _set_video_settings() {
     fi
 
     if [[ "$aspect_ratio" == "false" ]]; then
-        video_settings="${video_settings} --strict-anamorphic"
+        video_settings="${video_settings} --auto-anamorphic"
     elif [[ "$aspect_ratio" == "auto" ]]; then
         video_settings="${video_settings} --custom-anamorphic --pixel-aspect ${media_info_ar}"
     else
