@@ -64,7 +64,7 @@ _show_help() {
     printf -- "-u subtitle_track: subtitle track to rip (${subtitle_track})\n"
     printf -- "-v: override mediainfo and force constant framerate (${constant_fr})\n"
     printf -- "-w preview_count: how many previews to generate (can help with autocropping) (${preview_count})\n"
-    printf -- "-x: create an Extras directory structure\n"
+    printf -- "-x: Rip the disc extras\n"
     printf -- "-z crop: specify crop values <top:bottom:left:right> (${crop})\n"
     exit 2
 }
