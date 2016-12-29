@@ -151,7 +151,7 @@ _set_audio_settings() {
 
 while getopts :5abc:de:fi:l:m:no:p:r:s:t:u:vw:xz:h opt; do
     case "$opt" in
-        5)    decomb="--decomb"
+        5)    decomb="--comb-detect --decomb"
               ;;
         a)    add_aac=true
               ;;
