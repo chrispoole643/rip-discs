@@ -8,7 +8,7 @@
 ## Variables
 
 aspect_ratio=false
-burn=false
+burn=true
 add_aac=false
 foreign=false
 scan=false
@@ -47,7 +47,7 @@ _show_help() {
     printf -- "Options (and defaults):\n"
     printf -- "-5: enable decomb filter\n"
     printf -- "-a: instead of an AC3 track only, add AAC as the first track\n"
-    printf -- "-b: burn subtitles into the video (${burn})\n"
+    printf -- "-b: don't burn subtitles into the video\n"
     printf -- "-c: constant_frame_rate: set the constant frame rate (${constant_frame_rate})\n"
     printf -- "-d: set the movie filename to its name and year using TMDb\n"
     printf -- "-e source: source VIDEO_TS or MakeMKV-created directory to rip the content from (${source})\n"
@@ -155,7 +155,7 @@ while getopts :5abc:de:fi:l:m:no:p:r:s:t:u:vw:xz:h opt; do
               ;;
         a)    add_aac=true
               ;;
-        b)    burn=true
+        b)    burn=false
               ;;
         c)    constant_frame_rate="$OPTARG"
               ;;
