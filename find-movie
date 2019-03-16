@@ -29,6 +29,8 @@ def find_movie(movie, sort=False):
 if __name__ == '__main__':
     movie = find_movie(sys.argv[1].replace('_', ' '))
     if movie:
-        print movie[0].encode('ascii', 'replace') + ' (' + movie[1] + ')'
+        title=movie[0].encode('ascii', 'replace').decode('ascii')
+        year=movie[1]
+        print(title + ' (' + year + ')')
     else:
         sys.exit("find-movie: movie not found")
